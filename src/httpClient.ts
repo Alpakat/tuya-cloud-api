@@ -183,7 +183,7 @@ async function getRequestSign(
   body: { [k: string]: any } | undefined = undefined,
   token: string,
 ) {
-  console.log(path, method, _headers, query, body);
+  // console.log(path, method, _headers, query, body);
 
   const t = Date.now().toString();
   const [uri, pathQuery] = path.split('?');
