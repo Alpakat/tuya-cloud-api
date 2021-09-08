@@ -6,7 +6,7 @@ import crypto from 'crypto';
 import * as qs from 'qs';
 
 const availableEndpoints = {
-  eu: 'http://openapi.tuyaeu.com/v1.0',
+  eu: 'https://openapi.tuyaeu.com/v1.0',
   cn: 'https://openapi.tuyacn.com/v1.0',
   us: 'https://openapi.tuyaus.com/v1.0',
   in: 'https://openapi.tuyain.com/v1.0',
