@@ -13,6 +13,8 @@ import type {
 } from './types';
 import { httpClient, configure } from './httpClient';
 
+// import crypto from 'crypto';
+
 interface TokenData {
   accessToken: string;
   refreshToken: string;
@@ -42,21 +44,35 @@ class TuyaApi {
       clientId: apiClientId,
       clientSecret: apiClientSecret,
       serverLocation,
-      getToken: (options) => this.getTokenForRequest(options),
+      getToken: (options) =>
+        this.getTokenForRequest(options, {
+          clientId: apiClientId,
+          clientSecret: apiClientSecret,
+          prefixUrl: 'BLA',
+          getToken: 'Bla',
+        }),
     });
   }
 
-  async getToken({
-    grantType = 1,
-    refreshToken = null,
-  }: {
-    // if refresh token is passed, it will be used to request new token
-    refreshToken?: string | null;
-    grantType?:
-      | 1 // simple mode
-      // auth code mode
-      | 2;
-  } = {}): Promise<TokenData> {
+  async getToken(
+    {
+      grantType = 1,
+      refreshToken = null,
+    }: {
+      // if refresh token is passed, it will be used to request new token
+      refreshToken?: string | null;
+      grantType?:
+        | 1 // simple mode
+        // auth code mode
+        | 2;
+    } = {},
+    _defaultContext: {
+      clientId: null | string;
+      clientSecret: null | string;
+      prefixUrl: string;
+      getToken: any;
+    },
+  ): Promise<TokenData> {
     let uri = 'token';
 
     if (refreshToken) {
@@ -80,7 +96,15 @@ class TuyaApi {
     };
   }
 
-  async getTokenForRequest(options: NormalizedOptions): Promise<string | null> {
+  async getTokenForRequest(
+    options: NormalizedOptions,
+    defaultContext: {
+      clientId: null | string;
+      clientSecret: null | string;
+      prefixUrl: string;
+      getToken: any;
+    },
+  ): Promise<string | null> {
     if (options.url.pathname.includes('/token')) {
       // do not add accessToken if it is token request
       return null;
@@ -92,9 +116,12 @@ class TuyaApi {
       const request = {
         // this will be updated, when we get a token
         expiresAt: Date.now() + 10000,
-        promise: this.getToken({
-          grantType: 1,
-        }).then(
+        promise: this.getToken(
+          {
+            grantType: 1,
+          },
+          defaultContext,
+        ).then(
           ({ expiresAt, accessToken }) => {
             this.tokenRequest.expiresAt = expiresAt;
 
@@ -139,6 +166,7 @@ class TuyaApi {
   async getDevice({ deviceId }: { deviceId: string }): Promise<Device> {
     const { body } = await httpClient.get<DeviceResponse>(
       `devices/${deviceId}`,
+      {},
     );
 
     return body.result;
